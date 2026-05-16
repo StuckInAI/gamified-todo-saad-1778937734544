@@ -10,7 +10,7 @@ export function loadState<T>(defaultValue: T): T {
   }
 }
 
-export function saveState<T>(state: T): void {
+export function saveState(state: unknown): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {

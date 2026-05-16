@@ -1,8 +1,9 @@
 export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskStatus = 'pending' | 'completed' | 'overdue' | 'warning';
+export type CharacterMood = 'ecstatic' | 'happy' | 'content' | 'neutral' | 'tired' | 'sad';
+export type EquipmentCategory = 'hat' | 'accessory' | 'weapon' | 'armor';
 
-export type EquipmentCategory = 'hat' | 'accessory' | 'weapon';
-
-export type Task = {
+export interface Task {
   id: string;
   title: string;
   description: string;
@@ -15,9 +16,9 @@ export type Task = {
   completed: boolean;
   completedAt: string | null;
   createdAt: string;
-};
+}
 
-export type Project = {
+export interface Project {
   id: string;
   name: string;
   description: string;
@@ -26,27 +27,27 @@ export type Project = {
   deadline: string | null;
   extensionDays: number;
   createdAt: string;
-};
+}
 
-export type ShopItem = {
+export interface ShopItem {
   id: string;
   name: string;
   emoji: string;
   description: string;
   price: number;
   category: EquipmentCategory;
-  effect?: string;
-};
+  owned: boolean;
+  equipped: boolean;
+}
 
-export type Equipment = {
+export interface Equipment {
   hat: string | null;
   accessory: string | null;
   weapon: string | null;
-};
+  armor: string | null;
+}
 
-export type CharacterMood = 'happy' | 'neutral' | 'sad';
-
-export type Character = {
+export interface Character {
   name: string;
   level: number;
   xp: number;
@@ -54,22 +55,19 @@ export type Character = {
   coins: number;
   mood: CharacterMood;
   equipment: Equipment;
-  purchasedItems: string[];
-};
+}
 
-export type GameState = {
+export interface GameState {
   character: Character;
   tasks: Task[];
   projects: Project[];
   shopItems: ShopItem[];
   streak: number;
   lastActiveDate: string | null;
-};
+}
 
-export type NotificationType = 'xp' | 'coins' | 'levelup' | 'info';
-
-export type Notification = {
+export interface Notification {
   id: string;
   message: string;
-  type: NotificationType;
-};
+  type: 'xp' | 'coins' | 'levelup' | 'info';
+}
