@@ -1,65 +1,51 @@
-import type { Task, CharacterMood } from '@/types';
+import type { CharacterMood } from '@/types';
 
-export function calculateLevel(xp: number): number {
-  return Math.floor(xp / 100) + 1;
-}
-
-export function xpToNextLevel(xp: number): number {
-  const level = calculateLevel(xp);
-  return level * 100 - xp;
-}
-
-export function getXpForLevel(level: number): number {
+export function xpToNextLevel(level: number): number {
   return level * 100;
 }
 
+export { xpToNextLevel as calcXpToNextLevel };
+
 export function getMoodEmoji(mood: CharacterMood): string {
   switch (mood) {
-    case 'happy': return '😊';
     case 'ecstatic': return '🤩';
+    case 'happy': return '😊';
     case 'content': return '😌';
     case 'neutral': return '😐';
     case 'tired': return '😴';
-    default: return '😊';
+    case 'sad': return '😢';
+    default: return '😐';
   }
 }
 
-export function getMoodText(mood: CharacterMood): string {
+export function getMoodLabel(mood: CharacterMood): string {
   switch (mood) {
-    case 'happy': return 'Happy';
     case 'ecstatic': return 'Ecstatic';
+    case 'happy': return 'Happy';
     case 'content': return 'Content';
     case 'neutral': return 'Neutral';
     case 'tired': return 'Tired';
-    default: return 'Happy';
+    case 'sad': return 'Sad';
+    default: return 'Neutral';
   }
 }
 
-export function getTaskStatus(task: Task): 'active' | 'completed' | 'overdue' | 'warning' {
+export function getTaskStatus(task: import('@/types').Task): 'normal' | 'warning' | 'overdue' | 'completed' {
   if (task.completed) return 'completed';
-  if (!task.deadline) return 'active';
-
+  if (!task.deadline) return 'normal';
   const now = new Date();
-  const officialDeadline = new Date(task.deadline);
-  const finalDeadline = new Date(task.deadline);
+  const deadline = new Date(task.deadline);
+  const finalDeadline = new Date(deadline);
   finalDeadline.setDate(finalDeadline.getDate() + (task.extensionDays || 0));
-
   if (now > finalDeadline) return 'overdue';
-
-  const warningMs = 24 * 60 * 60 * 1000 * 2; // 2 days
-  if (now > officialDeadline || finalDeadline.getTime() - now.getTime() < warningMs) {
-    return 'warning';
-  }
-
-  return 'active';
+  const warningMs = 2 * 24 * 60 * 60 * 1000;
+  if (finalDeadline.getTime() - now.getTime() < warningMs) return 'warning';
+  return 'normal';
 }
 
-export function formatDeadline(deadline: string, extensionDays?: number): string {
-  const date = new Date(deadline);
-  if (extensionDays && extensionDays > 0) {
-    const extended = new Date(deadline);
-    extended.setDate(extended.getDate() + extensionDays);
-    return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} (+${extensionDays}d)`;
-  }
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+export function formatDeadline(deadline: string, extensionDays: number): string {
+  const base = new Date(deadline);
+  const final = new Date(base);
+  final.setDate(final.getDate() + (extensionDays || 0));
+  return final.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }

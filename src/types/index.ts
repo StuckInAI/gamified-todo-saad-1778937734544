@@ -1,6 +1,6 @@
 export type TaskPriority = 'low' | 'medium' | 'high';
-export type CharacterMood = 1 | 2 | 3 | 4 | 5;
-export type EquipmentCategory = 'hat' | 'accessory' | 'background' | 'outfit';
+
+export type CharacterMood = 'ecstatic' | 'happy' | 'content' | 'neutral' | 'tired' | 'sad';
 
 export interface Task {
   id: string;
@@ -33,10 +33,10 @@ export interface ShopItem {
   name: string;
   emoji: string;
   description: string;
-  price: number;
-  category: EquipmentCategory;
-  rarity: 'common' | 'rare' | 'epic';
-  unlockLevel: number;
+  cost: number;
+  category: 'hat' | 'accessory' | 'outfit';
+  owned: boolean;
+  equipped: boolean;
 }
 
 export interface Character {
@@ -49,19 +49,9 @@ export interface Character {
   equipment: {
     hat: string | null;
     accessory: string | null;
-    background: string | null;
     outfit: string | null;
   };
-  ownedItems: string[];
 }
-
-export interface Notification {
-  id: string;
-  message: string;
-  type: NotificationType;
-}
-
-export type NotificationType = 'xp' | 'coins' | 'levelup' | 'info';
 
 export interface GameState {
   character: Character;
@@ -70,4 +60,11 @@ export interface GameState {
   shopItems: ShopItem[];
   streak: number;
   lastActiveDate: string | null;
+  notifications: Notification[];
+}
+
+export interface Notification {
+  id: string;
+  message: string;
+  type: 'xp' | 'coins' | 'levelup' | 'info';
 }
