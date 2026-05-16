@@ -1,3 +1,5 @@
+export type CharacterMood = 'ecstatic' | 'happy' | 'content' | 'neutral' | 'tired';
+
 export type TaskPriority = 'low' | 'medium' | 'high';
 
 export type Task = {
@@ -29,17 +31,12 @@ export type Project = {
 export type ShopItem = {
   id: string;
   name: string;
-  emoji: string;
   description: string;
+  emoji: string;
   price: number;
-  type: 'hat' | 'accessory' | 'outfit';
-  color: string;
-};
-
-export type Equipment = {
-  hat: string | null;
-  accessory: string | null;
-  outfit: string | null;
+  category: 'hat' | 'accessory' | 'background' | 'boost';
+  unlockLevel: number;
+  purchased: boolean;
 };
 
 export type Character = {
@@ -48,9 +45,31 @@ export type Character = {
   xp: number;
   xpToNextLevel: number;
   coins: number;
-  mood: number;
-  equipment: Equipment;
-  ownedItems: string[];
+  mood: CharacterMood;
+  equipment: {
+    hat: string | null;
+    accessory: string | null;
+    background: string | null;
+  };
+  stats: {
+    tasksCompleted: number;
+    projectsCompleted: number;
+    longestStreak: number;
+  };
+};
+
+export type Quest = {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  requirement: number;
+  progress: number;
+  completed: boolean;
+  reward: {
+    xp: number;
+    coins: number;
+  };
 };
 
 export type NotificationType = 'xp' | 'coins' | 'levelup' | 'info';
@@ -59,13 +78,4 @@ export type Notification = {
   id: string;
   message: string;
   type: NotificationType;
-};
-
-export type GameState = {
-  character: Character;
-  tasks: Task[];
-  projects: Project[];
-  shopItems: ShopItem[];
-  streak: number;
-  lastActiveDate: string | null;
 };
