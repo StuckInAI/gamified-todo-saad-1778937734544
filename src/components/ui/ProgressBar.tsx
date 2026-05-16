@@ -4,25 +4,24 @@ type ProgressBarProps = {
   value: number;
   max: number;
   color?: string;
-  label?: string;
-  showText?: boolean;
+  showLabel?: boolean;
 };
 
-export default function ProgressBar({ value, max, color, label, showText = true }: ProgressBarProps) {
-  const percent = Math.min(100, Math.floor((value / max) * 100));
+export default function ProgressBar({ value, max, color = 'var(--color-primary)', showLabel = false }: ProgressBarProps) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
   return (
-    <div className={styles.wrapper}>
-      {label && <span className={styles.label}>{label}</span>}
-      <div className={styles.track}>
+    <div>
+      <div className={styles.wrap}>
         <div
-          className={styles.fill}
-          style={{ width: `${percent}%`, background: color || 'var(--color-primary)' }}
+          className={styles.bar}
+          style={{ width: `${pct}%`, background: color }}
         />
       </div>
-      {showText && (
-        <span className={styles.text}>
-          {value} / {max}
-        </span>
+      {showLabel && (
+        <div className={styles.label}>
+          <span>{value}</span>
+          <span>{pct}%</span>
+        </div>
       )}
     </div>
   );
