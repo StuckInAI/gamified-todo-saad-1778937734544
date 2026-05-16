@@ -1,135 +1,136 @@
 import { useGame } from '@/hooks/useGame';
 import ProgressBar from '@/components/ui/ProgressBar';
+import { getMoodEmoji, getMoodText } from '@/lib/gameUtils';
 import styles from './CharacterPage.module.css';
 
 export default function CharacterPage() {
-  const { state, dispatch, addNotification } = useGame();
-  const { character, shopItems } = state;
+  const { state, dispatch } = useGame();
+  const { character } = state;
 
-  function handleEquip(itemId: string) {
-    const item = shopItems.find((i) => i.id === itemId);
-    if (!item) return;
-    dispatch({ type: 'EQUIP_ITEM', payload: { item } });
-    const isNowEquipped = character.equipment[item.slot] !== item.id;
-    addNotification(
-      isNowEquipped ? `Equipped ${item.name}! ${item.emoji}` : `Unequipped ${item.name}`,
-      'info'
-    );
-  }
+  const equippedHat = character.equipment.hat
+    ? state.shopItems.find((i) => i.id === character.equipment.hat)
+    : null;
+  const equippedAccessory = character.equipment.accessory
+    ? state.shopItems.find((i) => i.id === character.equipment.accessory)
+    : null;
+  const equippedOutfit = character.equipment.outfit
+    ? state.shopItems.find((i) => i.id === character.equipment.outfit)
+    : null;
 
-  const ownedItems = shopItems.filter((i) => character.inventory.includes(i.id));
-
-  const stats = [
-    { label: 'Level', value: character.level, emoji: '⭐' },
-    { label: 'Total XP', value: character.xp, emoji: '✨' },
-    { label: 'Coins', value: character.coins, emoji: '🪙' },
-    { label: 'Items Owned', value: character.inventory.length, emoji: '🎒' },
+  const completedTasks = state.tasks.filter((t) => t.completed).length;
+  const achievements = [
+    { emoji: '🌱', name: 'First Quest', desc: 'Complete your first task', unlocked: completedTasks >= 1 },
+    { emoji: '⭐', name: 'Rising Star', desc: 'Complete 5 tasks', unlocked: completedTasks >= 5 },
+    { emoji: '🔥', name: 'On Fire', desc: 'Complete 10 tasks', unlocked: completedTasks >= 10 },
+    { emoji: '👑', name: 'Quest Master', desc: 'Complete 25 tasks', unlocked: completedTasks >= 25 },
+    { emoji: '🪙', name: 'Coin Hoarder', desc: 'Collect 200 coins', unlocked: character.coins >= 200 },
+    { emoji: '🛒', name: 'Shopaholic', desc: 'Own 3 items', unlocked: character.ownedItems.length >= 3 },
   ];
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>🧝 Character</h1>
-        <p className={styles.subtitle}>Your adventurer's profile and wardrobe.</p>
+        <h1 className={styles.title}>🧝 Your Character</h1>
+        <p className={styles.subtitle}>Level up by completing quests!</p>
       </div>
 
-      <div className={styles.profileCard}>
+      <div className={styles.characterCard}>
         <div className={styles.avatarSection}>
           <div className={styles.avatarBig}>
-            <span className={styles.avatarEmoji}>🧝</span>
-            {character.equipment.hat && (
-              <span className={styles.avatarHat}>
-                {shopItems.find((i) => i.id === character.equipment.hat)?.emoji}
-              </span>
+            <span className={styles.avatarMainEmoji}>🧝</span>
+            {equippedHat && (
+              <span className={styles.avatarHatEmoji}>{equippedHat.emoji}</span>
             )}
-            {character.equipment.accessory && (
-              <span className={styles.avatarAccessory}>
-                {shopItems.find((i) => i.id === character.equipment.accessory)?.emoji}
-              </span>
+            {equippedAccessory && (
+              <span className={styles.avatarAccessoryEmoji}>{equippedAccessory.emoji}</span>
+            )}
+            {equippedOutfit && (
+              <span className={styles.avatarOutfitEmoji}>{equippedOutfit.emoji}</span>
             )}
           </div>
-          <div className={styles.characterInfo}>
-            <h2 className={styles.characterName}>{character.name}</h2>
-            <p className={styles.characterLevel}>Level {character.level} Adventurer</p>
-            <p className={styles.characterMood}>Mood: {character.mood}</p>
+          <div className={styles.moodDisplay}>
+            {getMoodEmoji(character.mood)} {getMoodText(character.mood)}
           </div>
         </div>
 
-        <div className={styles.xpSection}>
-          <div className={styles.xpHeader}>
-            <span className={styles.xpLabel}>XP Progress</span>
-            <span className={styles.xpValue}>
-              {character.xpInLevel} / {character.xpToNextLevel}
-            </span>
+        <div className={styles.statsSection}>
+          <div>
+            <h2 className={styles.charName}>{character.name}</h2>
+            <span className={styles.levelBadge}>⚔️ Level {character.level}</span>
           </div>
-          <ProgressBar value={character.xpInLevel} max={character.xpToNextLevel} color="var(--color-primary)" />
+
+          <div className={styles.xpBar}>
+            <span className={styles.xpLabel}>
+              {character.xp} / {character.xpToNextLevel} XP to next level
+            </span>
+            <ProgressBar value={character.xp} max={character.xpToNextLevel} color="var(--color-primary)" />
+          </div>
+
+          <div className={styles.statRow}>
+            <div className={styles.statBox}>
+              <span className={styles.statLabel}>🪙 Coins</span>
+              <span className={styles.statValue}>{character.coins}</span>
+            </div>
+            <div className={styles.statBox}>
+              <span className={styles.statLabel}>✅ Completed</span>
+              <span className={styles.statValue}>{completedTasks}</span>
+            </div>
+            <div className={styles.statBox}>
+              <span className={styles.statLabel}>🔥 Streak</span>
+              <span className={styles.statValue}>{state.streak}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className={styles.statsGrid}>
-        {stats.map(({ label, value, emoji }) => (
-          <div key={label} className={styles.statCard}>
-            <span className={styles.statEmoji}>{emoji}</span>
-            <span className={styles.statValue}>{value}</span>
-            <span className={styles.statLabel}>{label}</span>
-          </div>
-        ))}
+      <div className={styles.equipmentSection}>
+        <h2 className={styles.sectionTitle}>⚔️ Equipment</h2>
+        <div className={styles.equipmentGrid}>
+          {(['hat', 'accessory', 'outfit'] as const).map((slot) => {
+            const item = slot === 'hat' ? equippedHat : slot === 'accessory' ? equippedAccessory : equippedOutfit;
+            return (
+              <div key={slot} className={styles.equipmentSlot}>
+                <span className={styles.slotLabel}>{slot}</span>
+                {item ? (
+                  <>
+                    <span className={styles.slotEmoji}>{item.emoji}</span>
+                    <span className={styles.slotName}>{item.name}</span>
+                    <button
+                      className={styles.unequipBtn}
+                      onClick={() => dispatch({ type: 'UNEQUIP_ITEM', payload: { slot } })}
+                    >
+                      Unequip
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className={styles.slotEmoji}>❓</span>
+                    <span className={styles.slotEmpty}>Nothing equipped</span>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div className={styles.wardrobeSection}>
-        <h2 className={styles.sectionTitle}>🎒 Wardrobe</h2>
-        <p className={styles.sectionSubtitle}>Items you own — click to equip/unequip</p>
-
-        <div className={styles.equippedRow}>
-          <div className={styles.equippedSlot}>
-            <span className={styles.slotLabel}>Hat</span>
-            <span className={styles.slotValue}>
-              {character.equipment.hat
-                ? shopItems.find((i) => i.id === character.equipment.hat)?.emoji + ' ' +
-                  shopItems.find((i) => i.id === character.equipment.hat)?.name
-                : 'None'}
-            </span>
-          </div>
-          <div className={styles.equippedSlot}>
-            <span className={styles.slotLabel}>Accessory</span>
-            <span className={styles.slotValue}>
-              {character.equipment.accessory
-                ? shopItems.find((i) => i.id === character.equipment.accessory)?.emoji + ' ' +
-                  shopItems.find((i) => i.id === character.equipment.accessory)?.name
-                : 'None'}
-            </span>
-          </div>
+      <div className={styles.achievementsSection}>
+        <h2 className={styles.sectionTitle}>🏆 Achievements</h2>
+        <div className={styles.achievementsList}>
+          {achievements.map((a) => (
+            <div
+              key={a.name}
+              className={styles.achievement}
+              style={{ opacity: a.unlocked ? 1 : 0.4 }}
+            >
+              <span className={styles.achievementEmoji}>{a.emoji}</span>
+              <div className={styles.achievementInfo}>
+                <span className={styles.achievementName}>{a.name} {a.unlocked ? '✅' : '🔒'}</span>
+                <span className={styles.achievementDesc}>{a.desc}</span>
+              </div>
+            </div>
+          ))}
         </div>
-
-        {ownedItems.length === 0 ? (
-          <div className={styles.emptyWardrobe}>
-            <span>🛍️</span>
-            <p>No items yet! Visit the Shop to buy cosmetics.</p>
-          </div>
-        ) : (
-          <div className={styles.itemsGrid}>
-            {ownedItems.map((item) => {
-              const isEquipped = character.equipment[item.slot] === item.id;
-              return (
-                <button
-                  key={item.id}
-                  className={[
-                    styles.itemCard,
-                    isEquipped ? styles.itemCardEquipped : '',
-                  ].join(' ')}
-                  onClick={() => handleEquip(item.id)}
-                >
-                  <span className={styles.itemEmoji}>{item.emoji}</span>
-                  <span className={styles.itemName}>{item.name}</span>
-                  <span className={styles.itemSlot}>{item.slot}</span>
-                  <span className={styles.itemEquipStatus}>
-                    {isEquipped ? '✅ Equipped' : item.slot}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,7 +1,5 @@
 export type TaskPriority = 'low' | 'medium' | 'high';
 
-export type TaskStatus = 'active' | 'completed' | 'overdue' | 'warning';
-
 export type Task = {
   id: string;
   title: string;
@@ -25,7 +23,6 @@ export type Project = {
   emoji: string;
   deadline: string | null;
   extensionDays: number;
-  completedCount: number;
   createdAt: string;
 };
 
@@ -35,8 +32,14 @@ export type ShopItem = {
   emoji: string;
   description: string;
   price: number;
-  slot: 'hat' | 'accessory';
-  category: string;
+  type: 'hat' | 'accessory' | 'outfit';
+  color: string;
+};
+
+export type Equipment = {
+  hat: string | null;
+  accessory: string | null;
+  outfit: string | null;
 };
 
 export type Character = {
@@ -44,14 +47,18 @@ export type Character = {
   level: number;
   xp: number;
   xpToNextLevel: number;
-  xpInLevel: number;
   coins: number;
-  mood: 'happy' | 'neutral' | 'tired' | 'ecstatic' | 'content';
-  equipment: {
-    hat: string | null;
-    accessory: string | null;
-  };
-  inventory: string[];
+  mood: number;
+  equipment: Equipment;
+  ownedItems: string[];
+};
+
+export type NotificationType = 'xp' | 'coins' | 'levelup' | 'info';
+
+export type Notification = {
+  id: string;
+  message: string;
+  type: NotificationType;
 };
 
 export type GameState = {
@@ -61,11 +68,4 @@ export type GameState = {
   shopItems: ShopItem[];
   streak: number;
   lastActiveDate: string | null;
-  notifications: Notification[];
-};
-
-export type Notification = {
-  id: string;
-  message: string;
-  type: 'xp' | 'coins' | 'levelup' | 'info';
 };

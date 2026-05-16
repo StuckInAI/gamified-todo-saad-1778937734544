@@ -1,16 +1,18 @@
-export function loadFromStorage<T>(key: string, fallback: T): T {
+const STORAGE_KEY = 'cozy-quest-state';
+
+export function loadState<T>(defaultValue: T): T {
   try {
-    const item = localStorage.getItem(key);
-    if (item) return JSON.parse(item) as T;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultValue;
+    return JSON.parse(raw) as T;
   } catch {
-    // ignore
+    return defaultValue;
   }
-  return fallback;
 }
 
-export function saveToStorage<T>(key: string, value: T): void {
+export function saveState<T>(state: T): void {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
     // ignore
   }

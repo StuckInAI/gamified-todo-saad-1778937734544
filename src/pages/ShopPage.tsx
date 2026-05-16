@@ -3,81 +3,87 @@ import styles from './ShopPage.module.css';
 
 export default function ShopPage() {
   const { state, dispatch, addNotification } = useGame();
-  const { character, shopItems } = state;
+  const { character } = state;
 
-  function handleBuy(itemId: string) {
-    const item = shopItems.find((i) => i.id === itemId);
-    if (!item) return;
-    const slot = item.slot as 'hat' | 'accessory';
-    if (character.inventory.includes(item.id)) return;
-    if (character.coins < item.price) {
+  const grouped = {
+    hat: state.shopItems.filter((i) => i.type === 'hat'),
+    accessory: state.shopItems.filter((i) => i.type === 'accessory'),
+    outfit: state.shopItems.filter((i) => i.type === 'outfit'),
+  };
+
+  function handleBuy(itemId: string, price: number) {
+    if (character.coins < price) {
       addNotification('Not enough coins! 😢', 'info');
       return;
     }
-    dispatch({ type: 'BUY_ITEM', payload: { item } });
-    addNotification(`Bought ${item.name}! ${item.emoji}`, 'info');
-    void slot;
+    dispatch({ type: 'BUY_ITEM', payload: { itemId } });
+    addNotification('Item purchased! 🛒', 'info');
   }
 
   function handleEquip(itemId: string) {
-    const item = shopItems.find((i) => i.id === itemId);
-    if (!item) return;
-    dispatch({ type: 'EQUIP_ITEM', payload: { item } });
-    const isNowEquipped = character.equipment[item.slot] !== item.id;
-    addNotification(
-      isNowEquipped ? `Equipped ${item.name}! ${item.emoji}` : `Unequipped ${item.name}`,
-      'info'
-    );
+    dispatch({ type: 'EQUIP_ITEM', payload: { itemId } });
+    addNotification('Item equipped! ✨', 'info');
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>🛍️ Cozy Shop</h1>
-        <p className={styles.subtitle}>Spend your hard-earned coins on cosmetics!</p>
+        <h1 className={styles.title}>🛒 Cozy Shop</h1>
+        <p className={styles.subtitle}>Spend your hard-earned coins on items for your character!</p>
       </div>
 
-      <div className={styles.balance}>
-        <span>🪙</span>
-        <span>{character.coins} coins</span>
+      <div className={styles.coinsBanner}>
+        🪙 {character.coins} coins available
       </div>
 
-      <div className={styles.grid}>
-        {shopItems.map((item) => {
-          const owned = character.inventory.includes(item.id);
-          const slot = item.slot as 'hat' | 'accessory';
-          const isEquipped = character.equipment[slot] === item.id;
-          return (
-            <div
-              key={item.id}
-              className={[
-                styles.itemCard,
-                owned ? styles.itemCardOwned : '',
-                isEquipped ? styles.itemCardEquipped : '',
-              ].join(' ')}
-            >
-              <span className={styles.itemEmoji}>{item.emoji}</span>
-              <span className={styles.itemName}>{item.name}</span>
-              <span className={styles.itemDesc}>{item.description}</span>
-              <span className={styles.itemSlot}>{item.slot}</span>
-              <span className={styles.itemPrice}>🪙 {item.price}</span>
-              {owned ? (
-                <button className={styles.equipBtn} onClick={() => handleEquip(item.id)}>
-                  {isEquipped ? '✅ Equipped' : 'Equip'}
-                </button>
-              ) : (
-                <button
-                  className={styles.buyBtn}
-                  onClick={() => handleBuy(item.id)}
-                  disabled={character.coins < item.price}
+      {(['hat', 'accessory', 'outfit'] as const).map((type) => (
+        <div key={type}>
+          <h2 className={styles.sectionTitle}>
+            {type === 'hat' ? '🎩 Hats' : type === 'accessory' ? '✨ Accessories' : '👗 Outfits'}
+          </h2>
+          <div className={styles.grid}>
+            {grouped[type].map((item) => {
+              const owned = character.ownedItems.includes(item.id);
+              const equipped = character.equipment[type] === item.id;
+              return (
+                <div
+                  key={item.id}
+                  className={[
+                    styles.itemCard,
+                    owned ? styles.itemCardOwned : '',
+                    equipped ? styles.itemCardEquipped : '',
+                  ].join(' ')}
                 >
-                  Buy
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                  <span className={styles.itemEmoji}>{item.emoji}</span>
+                  <span className={styles.itemName}>{item.name}</span>
+                  <span className={styles.itemDesc}>{item.description}</span>
+                  {!owned && (
+                    <span className={styles.itemPrice}>🪙 {item.price}</span>
+                  )}
+                  {equipped ? (
+                    <span className={styles.equippedLabel}>✅ Equipped</span>
+                  ) : owned ? (
+                    <button className={styles.equipBtn} onClick={() => handleEquip(item.id)}>
+                      Equip
+                    </button>
+                  ) : (
+                    <button
+                      className={[
+                        styles.buyBtn,
+                        character.coins < item.price ? styles.buyBtnDisabled : '',
+                      ].join(' ')}
+                      onClick={() => handleBuy(item.id, item.price)}
+                      disabled={character.coins < item.price}
+                    >
+                      Buy 🪙 {item.price}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

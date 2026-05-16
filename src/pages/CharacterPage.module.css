@@ -1,6 +1,6 @@
 .page {
   padding: var(--space-xl);
-  max-width: 900px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
@@ -17,173 +17,119 @@
 }
 
 .subtitle {
-  font-size: 15px;
   color: var(--color-text-muted);
+  font-size: 15px;
 }
 
-.profileCard {
+.characterCard {
   background: var(--color-bg-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
-  margin-bottom: var(--space-xl);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-xl);
+  align-items: center;
+  margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-md);
 }
 
 .avatarSection {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-xl);
+  gap: var(--space-md);
+  flex-shrink: 0;
 }
 
 .avatarBig {
   position: relative;
-  width: 100px;
-  height: 100px;
-  background: var(--color-primary-light);
-  border-radius: var(--radius-full);
+  width: 120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  background: var(--color-primary-light);
+  border-radius: var(--radius-full);
+  border: 3px solid var(--color-primary);
 }
 
-.avatarEmoji {
-  font-size: 52px;
+.avatarMainEmoji {
+  font-size: 72px;
   line-height: 1;
 }
 
-.avatarHat {
+.avatarHatEmoji {
   position: absolute;
-  top: -12px;
-  right: -6px;
+  top: -16px;
+  right: -8px;
+  font-size: 36px;
+}
+
+.avatarAccessoryEmoji {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
   font-size: 28px;
 }
 
-.avatarAccessory {
+.avatarOutfitEmoji {
   position: absolute;
-  bottom: -4px;
-  right: -8px;
-  font-size: 24px;
+  bottom: -8px;
+  left: -8px;
+  font-size: 28px;
 }
 
-.characterInfo {
+.moodDisplay {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.statsSection {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: var(--space-md);
 }
 
-.characterName {
+.charName {
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 800;
   color: var(--color-text);
 }
 
-.characterLevel {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-}
-
-.characterMood {
+.levelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  padding: 4px 14px;
   font-size: 14px;
-  color: var(--color-text-muted);
-  text-transform: capitalize;
+  font-weight: 700;
 }
 
-.xpSection {
+.xpBar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.xpHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: var(--space-xs);
 }
 
 .xpLabel {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--color-text);
-}
-
-.xpValue {
   font-size: 13px;
-  color: var(--color-text-muted);
-}
-
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
-}
-
-.statCard {
-  background: var(--color-bg-card);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  align-items: center;
-  text-align: center;
-}
-
-.statEmoji {
-  font-size: 24px;
-}
-
-.statValue {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--color-primary);
-}
-
-.statLabel {
-  font-size: 12px;
   color: var(--color-text-muted);
   font-weight: 600;
 }
 
-.wardrobeSection {
-  background: var(--color-bg-card);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-}
-
-.sectionTitle {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-text);
-  margin-bottom: var(--space-xs);
-}
-
-.sectionSubtitle {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-lg);
-}
-
-.equippedRow {
+.statRow {
   display: flex;
   gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-  flex-wrap: wrap;
 }
 
-.equippedSlot {
+.statBox {
   flex: 1;
-  min-width: 140px;
   background: var(--color-bg);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -193,86 +139,136 @@
   gap: 4px;
 }
 
-.slotLabel {
-  font-size: 11px;
-  font-weight: 700;
+.statLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-text-muted);
 }
 
-.slotValue {
-  font-size: 14px;
-  font-weight: 600;
+.statValue {
+  font-size: 20px;
+  font-weight: 800;
   color: var(--color-text);
+  font-family: var(--font-display);
 }
 
-.emptyWardrobe {
-  text-align: center;
-  padding: var(--space-xl);
-  color: var(--color-text-muted);
-  font-size: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
+.equipmentSection {
+  margin-bottom: var(--space-xl);
 }
 
-.emptyWardrobe span {
-  font-size: 40px;
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
 }
 
-.itemsGrid {
+.equipmentGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-md);
 }
 
-.itemCard {
-  background: var(--color-bg);
+.equipmentSlot {
+  background: var(--color-bg-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-md);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--space-sm);
   text-align: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
 }
 
-.itemCard:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-primary);
-}
-
-.itemCardEquipped {
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
-}
-
-.itemEmoji {
-  font-size: 32px;
-}
-
-.itemName {
+.slotLabel {
+  font-size: 12px;
   font-weight: 700;
-  font-size: 13px;
-  color: var(--color-text);
-}
-
-.itemSlot {
-  font-size: 11px;
-  font-weight: 600;
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.itemEquipStatus {
-  font-size: 12px;
+.slotEmoji {
+  font-size: 40px;
+}
+
+.slotName {
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-text);
+}
+
+.slotEmpty {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.unequipBtn {
+  font-size: 12px;
+  color: var(--color-danger);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-danger);
+  transition: all var(--transition-fast);
+}
+
+.unequipBtn:hover {
+  background: var(--color-danger);
+  color: white;
+}
+
+.achievementsSection {}
+
+.achievementsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.achievement {
+  background: var(--color-bg-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.achievementEmoji {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.achievementInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.achievementName {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.achievementDesc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 600px) {
+  .characterCard {
+    flex-direction: column;
+    text-align: center;
+  }
+  .equipmentGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

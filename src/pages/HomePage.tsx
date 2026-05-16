@@ -1,165 +1,152 @@
 import { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, FolderPlus } from 'lucide-react';
 import { useGame } from '@/hooks/useGame';
 import TaskCard from '@/components/tasks/TaskCard';
 import AddTaskModal from '@/components/tasks/AddTaskModal';
 import AddProjectModal from '@/components/tasks/AddProjectModal';
 import ProgressBar from '@/components/ui/ProgressBar';
+import { getMoodEmoji } from '@/lib/gameUtils';
 import styles from './HomePage.module.css';
 
-type Filter = 'all' | 'active' | 'completed';
-
 export default function HomePage() {
-  const { state, dispatch } = useGame();
-  const { character, tasks, projects } = state;
-  const [filter, setFilter] = useState<Filter>('active');
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const { state } = useGame();
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddProject, setShowAddProject] = useState(false);
+  const [filterProject, setFilterProject] = useState<string | null>(null);
 
-  const filteredTasks = tasks.filter((t) => {
-    const matchProject = selectedProjectId ? t.projectId === selectedProjectId : true;
-    const matchFilter =
-      filter === 'all' ? true : filter === 'active' ? !t.completed : t.completed;
-    return matchProject && matchFilter;
-  });
+  const { character, tasks, projects } = state;
 
-  const activeTasks = tasks.filter((t) => !t.completed).length;
-  const completedTasks = tasks.filter((t) => t.completed).length;
+  const activeTasks = tasks.filter((t) => !t.completed);
+  const completedToday = tasks.filter((t) => {
+    if (!t.completedAt) return false;
+    const d = new Date(t.completedAt);
+    const today = new Date();
+    return d.toDateString() === today.toDateString();
+  }).length;
 
-  const hours = new Date().getHours();
+  const filteredTasks = filterProject
+    ? activeTasks.filter((t) => t.projectId === filterProject)
+    : activeTasks;
+
+  const hour = new Date().getHours();
   const greeting =
-    hours < 12 ? 'Good morning' : hours < 17 ? 'Good afternoon' : 'Good evening';
+    hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.greeting}>
-          {greeting}, {character.name}! 🌟
-        </h1>
-        <p className={styles.subtitle}>
-          You have {activeTasks} active quest{activeTasks !== 1 ? 's' : ''} to complete.
-        </p>
+        <div className={styles.headerText}>
+          <h1 className={styles.greeting}>
+            {greeting}, {character.name}! {getMoodEmoji(character.mood)}
+          </h1>
+          <p className={styles.subGreeting}>
+            You have {activeTasks.length} active quest{activeTasks.length !== 1 ? 's' : ''}.
+          </p>
+        </div>
+        <div className={styles.headerActions}>
+          <button className={styles.addBtnSecondary} onClick={() => setShowAddProject(true)}>
+            <FolderPlus size={18} />
+            New Project
+          </button>
+          <button className={styles.addBtn} onClick={() => setShowAddTask(true)}>
+            <Plus size={18} />
+            Add Quest
+          </button>
+        </div>
       </div>
 
       <div className={styles.statsRow}>
-        {[
-          { emoji: '⚔️', value: activeTasks, label: 'Active Quests' },
-          { emoji: '✅', value: completedTasks, label: 'Completed' },
-          { emoji: '🔥', value: state.streak, label: 'Day Streak' },
-          { emoji: '🪙', value: character.coins, label: 'Coins' },
-        ].map(({ emoji, value, label }) => (
-          <div key={label} className={styles.statCard}>
-            <span className={styles.statEmoji}>{emoji}</span>
-            <span className={styles.statValue}>{value}</span>
-            <span className={styles.statLabel}>{label}</span>
-          </div>
-        ))}
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>⚔️</span>
+          <span className={styles.statValue}>{activeTasks.length}</span>
+          <span className={styles.statLabel}>Active Quests</span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>✅</span>
+          <span className={styles.statValue}>{completedToday}</span>
+          <span className={styles.statLabel}>Done Today</span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>🪙</span>
+          <span className={styles.statValue}>{character.coins}</span>
+          <span className={styles.statLabel}>Coins</span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statEmoji}>🔥</span>
+          <span className={styles.statValue}>{state.streak}</span>
+          <span className={styles.statLabel}>Day Streak</span>
+        </div>
       </div>
 
       <div className={styles.xpSection}>
         <div className={styles.xpHeader}>
-          <span className={styles.xpLabel}>Level {character.level} — XP Progress</span>
-          <span className={styles.xpValue}>
-            {character.xpInLevel} / {character.xpToNextLevel} XP
-          </span>
+          <span className={styles.xpTitle}>⭐ Level {character.level}</span>
+          <span className={styles.xpMeta}>{character.xp} / {character.xpToNextLevel} XP</span>
         </div>
-        <ProgressBar value={character.xpInLevel} max={character.xpToNextLevel} color="var(--color-primary)" />
+        <ProgressBar value={character.xp} max={character.xpToNextLevel} color="var(--color-primary)" />
       </div>
 
-      <div className={styles.projectsSection}>
-        <div className={styles.sectionHeader}>
+      {projects.length > 0 && (
+        <div className={styles.projects}>
           <h2 className={styles.sectionTitle}>🗺️ Projects</h2>
-          <button className={styles.addBtn} onClick={() => setShowAddProject(true)}>
-            <Plus size={16} /> New Project
-          </button>
-        </div>
-        <div className={styles.projectsGrid}>
-          {projects.map((project) => {
-            const count = tasks.filter((t) => t.projectId === project.id && !t.completed).length;
-            return (
-              <button
-                key={project.id}
-                className={[
-                  styles.projectCard,
-                  selectedProjectId === project.id ? styles.projectCardActive : '',
-                ].join(' ')}
-                style={{ borderTopColor: project.color }}
-                onClick={() =>
-                  setSelectedProjectId((prev) => (prev === project.id ? null : project.id))
-                }
-              >
-                <div className={styles.projectEmoji}>{project.emoji}</div>
-                <div className={styles.projectName}>{project.name}</div>
-                <div className={styles.projectCount}>{count} active task{count !== 1 ? 's' : ''}</div>
-                <button
-                  className={styles.projectDeleteBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    dispatch({ type: 'DELETE_PROJECT', payload: { id: project.id } });
-                    if (selectedProjectId === project.id) setSelectedProjectId(null);
-                  }}
-                >
-                  <Trash2 size={14} />
-                </button>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className={styles.tasksSection}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>
-            {selectedProjectId
-              ? `${projects.find((p) => p.id === selectedProjectId)?.emoji} ${
-                  projects.find((p) => p.id === selectedProjectId)?.name
-                }`
-              : '✨ All Quests'}
-          </h2>
-          <button className={styles.addBtn} onClick={() => setShowAddTask(true)}>
-            <Plus size={16} /> New Quest
-          </button>
-        </div>
-
-        <div className={styles.filterRow}>
-          {(['all', 'active', 'completed'] as Filter[]).map((f) => (
+          <div className={styles.projectList}>
             <button
-              key={f}
-              className={[styles.filterBtn, filter === f ? styles.filterBtnActive : ''].join(' ')}
-              onClick={() => setFilter(f)}
+              className={[
+                styles.projectChip,
+                filterProject === null ? styles.projectChipActive : '',
+              ].join(' ')}
+              style={filterProject === null ? { background: 'var(--color-primary)' } : {}}
+              onClick={() => setFilterProject(null)}
             >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
+              All
             </button>
-          ))}
+            {projects.map((p) => (
+              <button
+                key={p.id}
+                className={[
+                  styles.projectChip,
+                  filterProject === p.id ? styles.projectChipActive : '',
+                ].join(' ')}
+                style={filterProject === p.id ? { background: p.color } : {}}
+                onClick={() => setFilterProject(filterProject === p.id ? null : p.id)}
+              >
+                {p.emoji} {p.name}
+              </button>
+            ))}
+          </div>
         </div>
+      )}
 
-        <div className={styles.taskList}>
-          {filteredTasks.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyEmoji}>🌿</div>
-              <p className={styles.emptyText}>
-                {filter === 'completed' ? 'No completed quests yet!' : 'No quests here. Add one!'}
-              </p>
-            </div>
-          ) : (
-            filteredTasks.map((task) => (
+      <div className={styles.taskSection}>
+        <h2 className={styles.sectionTitle}>⚔️ Active Quests</h2>
+        {filteredTasks.length === 0 ? (
+          <div className={styles.emptyState}>
+            <span className={styles.emptyEmoji}>🌟</span>
+            <p className={styles.emptyTitle}>All clear, adventurer!</p>
+            <p className={styles.emptyDesc}>Add a new quest to get started.</p>
+          </div>
+        ) : (
+          <div className={styles.taskList}>
+            {filteredTasks.map((task) => (
               <TaskCard
                 key={task.id}
                 task={task}
                 project={projects.find((p) => p.id === task.projectId) ?? null}
               />
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <AddTaskModal
         isOpen={showAddTask}
         onClose={() => setShowAddTask(false)}
-        defaultProjectId={selectedProjectId}
+        defaultProjectId={filterProject}
       />
-      <AddProjectModal isOpen={showAddProject} onClose={() => setShowAddProject(false)} />
+      <AddProjectModal
+        isOpen={showAddProject}
+        onClose={() => setShowAddProject(false)}
+      />
     </div>
   );
 }

@@ -17,20 +17,31 @@
 }
 
 .subtitle {
-  font-size: 15px;
   color: var(--color-text-muted);
+  font-size: 15px;
 }
 
-.balance {
+.coinsBanner {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
   background: var(--color-accent);
-  padding: var(--space-sm) var(--space-md);
+  color: var(--color-text);
   border-radius: var(--radius-full);
-  font-weight: 700;
+  padding: 6px 16px;
   font-size: 16px;
+  font-weight: 800;
   margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
+  margin-top: var(--space-xl);
 }
 
 .grid {
@@ -68,7 +79,7 @@
 }
 
 .itemEmoji {
-  font-size: 40px;
+  font-size: 48px;
 }
 
 .itemName {
@@ -83,53 +94,50 @@
   line-height: 1.4;
 }
 
-.itemSlot {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .itemPrice {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 14px;
   color: var(--color-text);
 }
 
 .buyBtn {
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
   background: var(--color-primary);
   color: white;
-  padding: var(--space-xs) var(--space-md);
-  border-radius: var(--radius-md);
-  font-size: 13px;
   font-weight: 700;
+  font-size: 13px;
   transition: all var(--transition-fast);
-  width: 100%;
 }
 
-.buyBtn:hover:not(:disabled) {
+.buyBtn:hover {
   background: var(--color-primary-dark);
-  transform: translateY(-1px);
 }
 
-.buyBtn:disabled {
-  opacity: 0.5;
+.buyBtnDisabled {
+  background: var(--color-border);
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 
 .equipBtn {
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
   background: var(--color-secondary);
   color: var(--color-text);
-  padding: var(--space-xs) var(--space-md);
-  border-radius: var(--radius-md);
-  font-size: 13px;
   font-weight: 700;
+  font-size: 13px;
   transition: all var(--transition-fast);
-  width: 100%;
 }
 
 .equipBtn:hover {
   background: var(--color-secondary-dark);
-  transform: translateY(-1px);
+}
+
+.equippedLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
 }
