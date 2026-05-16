@@ -1,8 +1,8 @@
-export type CharacterMood = 'ecstatic' | 'happy' | 'content' | 'neutral' | 'tired';
-
 export type TaskPriority = 'low' | 'medium' | 'high';
+export type CharacterMood = 1 | 2 | 3 | 4 | 5;
+export type EquipmentCategory = 'hat' | 'accessory' | 'background' | 'outfit';
 
-export type Task = {
+export interface Task {
   id: string;
   title: string;
   description: string;
@@ -15,9 +15,9 @@ export type Task = {
   completed: boolean;
   completedAt: string | null;
   createdAt: string;
-};
+}
 
-export type Project = {
+export interface Project {
   id: string;
   name: string;
   description: string;
@@ -26,20 +26,20 @@ export type Project = {
   deadline: string | null;
   extensionDays: number;
   createdAt: string;
-};
+}
 
-export type ShopItem = {
+export interface ShopItem {
   id: string;
   name: string;
-  description: string;
   emoji: string;
+  description: string;
   price: number;
-  category: 'hat' | 'accessory' | 'background' | 'boost';
+  category: EquipmentCategory;
+  rarity: 'common' | 'rare' | 'epic';
   unlockLevel: number;
-  purchased: boolean;
-};
+}
 
-export type Character = {
+export interface Character {
   name: string;
   level: number;
   xp: number;
@@ -50,32 +50,24 @@ export type Character = {
     hat: string | null;
     accessory: string | null;
     background: string | null;
+    outfit: string | null;
   };
-  stats: {
-    tasksCompleted: number;
-    projectsCompleted: number;
-    longestStreak: number;
-  };
-};
+  ownedItems: string[];
+}
 
-export type Quest = {
-  id: string;
-  title: string;
-  description: string;
-  emoji: string;
-  requirement: number;
-  progress: number;
-  completed: boolean;
-  reward: {
-    xp: number;
-    coins: number;
-  };
-};
-
-export type NotificationType = 'xp' | 'coins' | 'levelup' | 'info';
-
-export type Notification = {
+export interface Notification {
   id: string;
   message: string;
   type: NotificationType;
-};
+}
+
+export type NotificationType = 'xp' | 'coins' | 'levelup' | 'info';
+
+export interface GameState {
+  character: Character;
+  tasks: Task[];
+  projects: Project[];
+  shopItems: ShopItem[];
+  streak: number;
+  lastActiveDate: string | null;
+}
