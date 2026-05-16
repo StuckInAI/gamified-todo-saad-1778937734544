@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react';
-import type { ReactNode } from 'react';
-import { INITIAL_SHOP_ITEMS, INITIAL_CHARACTER } from '@/lib/gameData';
-import { calculateLevel } from '@/lib/gameUtils';
+import { createContext, useContext, useReducer, useEffect, useCallback, useState, type ReactNode } from 'react';
+import type { GameState, Task, Project, ShopItem, EquipmentSlot } from '@/types';
+import { SHOP_ITEMS, INITIAL_CHARACTER } from '@/lib/gameData';
 import { loadState, saveState } from '@/lib/storage';
-import type { GameState, Notification, Task, Project, ShopItem } from '@/types';
+import { calculateLevel } from '@/lib/gameUtils';
 
 type Action =
   | { type: 'ADD_TASK'; payload: Omit<Task, 'id' | 'completed' | 'completedAt' | 'createdAt'> }
@@ -13,23 +12,20 @@ type Action =
   | { type: 'DELETE_PROJECT'; payload: { id: string } }
   | { type: 'BUY_ITEM'; payload: { id: string } }
   | { type: 'EQUIP_ITEM'; payload: { id: string } }
-  | { type: 'UNEQUIP_ITEM'; payload: { id: string } }
+  | { type: 'UNEQUIP_ITEM'; payload: { category: EquipmentSlot } }
+  | { type: 'RENAME_CHARACTER'; payload: { name: string } }
   | { type: 'LOAD_STATE'; payload: GameState };
 
-const DEFAULT_STATE: GameState = {
+const initialState: GameState = {
   character: INITIAL_CHARACTER,
   tasks: [],
   projects: [],
-  shopItems: INITIAL_SHOP_ITEMS,
+  shopItems: SHOP_ITEMS,
   streak: 0,
   lastActiveDate: null,
 };
 
-function uid(): string {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
-}
-
-function reducer(state: GameState, action: Action): GameState {
+function gameReducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case 'LOAD_STATE':
       return action.payload;
@@ -37,7 +33,7 @@ function reducer(state: GameState, action: Action): GameState {
     case 'ADD_TASK': {
       const task: Task = {
         ...action.payload,
-        id: uid(),
+        id: crypto.randomUUID(),
         completed: false,
         completedAt: null,
         createdAt: new Date().toISOString(),
@@ -48,37 +44,17 @@ function reducer(state: GameState, action: Action): GameState {
     case 'COMPLETE_TASK': {
       const task = state.tasks.find((t) => t.id === action.payload.id);
       if (!task || task.completed) return state;
-
       const newXp = state.character.xp + task.xpReward;
       const newCoins = state.character.coins + task.coinReward;
-      const { level, xpToNextLevel } = calculateLevel(newXp);
-      const completedTasksToday = state.tasks.filter(
-        (t) => t.completed && t.completedAt && t.completedAt.startsWith(new Date().toISOString().slice(0, 10))
-      ).length;
-      const mood =
-        level > state.character.level
-          ? 'ecstatic'
-          : completedTasksToday >= 4
-          ? 'happy'
-          : completedTasksToday >= 2
-          ? 'content'
-          : state.character.mood;
-
+      const { level, xpToNextLevel, xp } = calculateLevel(newXp, state.character.level, state.character.xpToNextLevel);
       return {
         ...state,
+        character: { ...state.character, xp, coins: newCoins, level, xpToNextLevel },
         tasks: state.tasks.map((t) =>
           t.id === action.payload.id
             ? { ...t, completed: true, completedAt: new Date().toISOString() }
             : t
         ),
-        character: {
-          ...state.character,
-          xp: newXp,
-          coins: newCoins,
-          level,
-          xpToNextLevel,
-          mood,
-        },
       };
     }
 
@@ -88,7 +64,7 @@ function reducer(state: GameState, action: Action): GameState {
     case 'ADD_PROJECT': {
       const project: Project = {
         ...action.payload,
-        id: uid(),
+        id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
       return { ...state, projects: [project, ...state.projects] };
@@ -98,86 +74,88 @@ function reducer(state: GameState, action: Action): GameState {
       return {
         ...state,
         projects: state.projects.filter((p) => p.id !== action.payload.id),
-        tasks: state.tasks.filter((t) => t.projectId !== action.payload.id),
+        tasks: state.tasks.map((t) =>
+          t.projectId === action.payload.id ? { ...t, projectId: null } : t
+        ),
       };
 
     case 'BUY_ITEM': {
-      const item = state.shopItems.find((i) => i.id === action.payload.id);
-      if (!item || item.owned || state.character.coins < item.price) return state;
+      const item = state.shopItems.find((i) => i.id === action.payload.id) as ShopItem | undefined;
+      if (!item) return state;
+      if (state.character.coins < item.price) return state;
+      if (state.character.purchasedItems.includes(item.id)) return state;
       return {
         ...state,
-        character: { ...state.character, coins: state.character.coins - item.price },
-        shopItems: state.shopItems.map((i) =>
-          i.id === action.payload.id ? { ...i, owned: true } : i
-        ),
+        character: {
+          ...state.character,
+          coins: state.character.coins - item.price,
+          purchasedItems: [...state.character.purchasedItems, item.id],
+        },
       };
     }
 
     case 'EQUIP_ITEM': {
       const item = state.shopItems.find((i) => i.id === action.payload.id) as ShopItem | undefined;
-      if (!item || !item.owned) return state;
-      const cat = item.category;
+      if (!item) return state;
       return {
         ...state,
-        shopItems: state.shopItems.map((i) =>
-          i.category === cat ? { ...i, equipped: i.id === action.payload.id } : i
-        ),
         character: {
           ...state.character,
-          equipment: { ...state.character.equipment, [cat]: action.payload.id },
+          equipment: { ...state.character.equipment, [item.category]: item.id },
         },
       };
     }
 
-    case 'UNEQUIP_ITEM': {
-      const item = state.shopItems.find((i) => i.id === action.payload.id) as ShopItem | undefined;
-      if (!item) return state;
-      const cat = item.category;
+    case 'UNEQUIP_ITEM':
       return {
         ...state,
-        shopItems: state.shopItems.map((i) =>
-          i.id === action.payload.id ? { ...i, equipped: false } : i
-        ),
         character: {
           ...state.character,
-          equipment: { ...state.character.equipment, [cat]: null },
+          equipment: { ...state.character.equipment, [action.payload.category]: null },
         },
       };
-    }
+
+    case 'RENAME_CHARACTER':
+      return {
+        ...state,
+        character: { ...state.character, name: action.payload.name },
+      };
 
     default:
       return state;
   }
 }
 
-interface GameContextValue {
+type Notification = { id: string; message: string; type: 'xp' | 'coins' | 'levelup' | 'info' };
+
+type GameContextValue = {
   state: GameState;
   dispatch: React.Dispatch<Action>;
   notifications: Notification[];
   addNotification: (message: string, type: Notification['type']) => void;
-}
+};
 
 const GameContext = createContext<GameContextValue | null>(null);
 
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, DEFAULT_STATE);
+  const [state, dispatch] = useReducer(gameReducer, initialState);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const saved = loadState<GameState>(DEFAULT_STATE);
-    dispatch({ type: 'LOAD_STATE', payload: saved });
-    setHydrated(true);
+    const saved = loadState();
+    if (saved) {
+      dispatch({ type: 'LOAD_STATE', payload: saved });
+    }
+    setLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (hydrated) {
-      saveState(state);
-    }
-  }, [state, hydrated]);
+    if (loaded) saveState(state);
+  }, [state, loaded]);
 
   const addNotification = useCallback((message: string, type: Notification['type']) => {
-    const id = uid();
+    const id = crypto.randomUUID();
     setNotifications((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
@@ -191,7 +169,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useGame(): GameContextValue {
+export function useGame() {
   const ctx = useContext(GameContext);
   if (!ctx) throw new Error('useGame must be used within GameProvider');
   return ctx;
