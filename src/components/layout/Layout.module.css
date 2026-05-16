@@ -1,0 +1,20 @@
+.root {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .root {
+    flex-direction: column;
+  }
+  .main {
+    padding-bottom: 80px;
+  }
+}
