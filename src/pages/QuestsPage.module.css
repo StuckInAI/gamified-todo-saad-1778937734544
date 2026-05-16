@@ -1,18 +1,11 @@
 .page {
-  padding: 32px;
-  max-width: 800px;
+  padding: var(--space-xl);
+  max-width: 900px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+  margin-bottom: var(--space-xl);
 }
 
 .title {
@@ -20,43 +13,37 @@
   font-size: 28px;
   font-weight: 800;
   color: var(--color-text);
+  margin-bottom: var(--space-xs);
 }
 
-.addBtn {
+.subtitle {
+  font-size: 15px;
+  color: var(--color-text-muted);
+}
+
+.controls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--color-primary);
-  color: white;
-  padding: 10px 20px;
-  border-radius: var(--radius-lg);
-  font-size: 15px;
-  font-weight: 700;
-  font-family: var(--font-display);
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.addBtn:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+  gap: var(--space-md);
 }
 
 .filterRow {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   flex-wrap: wrap;
 }
 
 .filterBtn {
-  padding: 6px 14px;
+  padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-full);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-muted);
-  background: var(--color-bg-card);
   border: 2px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
   transition: all var(--transition-fast);
 }
 
@@ -67,60 +54,49 @@
 
 .filterBtnActive {
   background: var(--color-primary);
-  color: white;
   border-color: var(--color-primary);
+  color: white;
 }
 
-.section {
+.addBtn {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-primary);
+  color: white;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  transition: all var(--transition-fast);
 }
 
-.sectionTitle {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text);
+.addBtn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 .taskList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-sm);
 }
 
 .emptyState {
+  text-align: center;
+  padding: var(--space-xl);
   background: var(--color-bg-card);
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 40px;
-  text-align: center;
   color: var(--color-text-muted);
-  font-size: 15px;
 }
 
 .emptyEmoji {
-  font-size: 48px;
-  display: block;
-  margin-bottom: 12px;
+  font-size: 40px;
+  margin-bottom: var(--space-sm);
 }
 
-.statsBar {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.statPill {
-  background: var(--color-bg-card);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-full);
-  padding: 6px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.emptyText {
+  font-size: 15px;
+  font-weight: 600;
 }

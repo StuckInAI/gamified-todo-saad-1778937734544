@@ -1,18 +1,11 @@
 .page {
-  padding: 32px;
+  padding: var(--space-xl);
   max-width: 900px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+  margin-bottom: var(--space-xl);
 }
 
 .greeting {
@@ -20,227 +13,199 @@
   font-size: 28px;
   font-weight: 800;
   color: var(--color-text);
+  margin-bottom: var(--space-xs);
 }
 
-.subGreeting {
+.subtitle {
   font-size: 15px;
   color: var(--color-text-muted);
-  margin-top: 4px;
-}
-
-.actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.btnPrimary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--color-primary);
-  color: white;
-  padding: 10px 20px;
-  border-radius: var(--radius-lg);
-  font-size: 15px;
-  font-weight: 700;
-  font-family: var(--font-display);
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.btnPrimary:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btnSecondary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--color-bg-card);
-  color: var(--color-text);
-  padding: 10px 20px;
-  border-radius: var(--radius-lg);
-  font-size: 15px;
-  font-weight: 700;
-  font-family: var(--font-display);
-  border: 2px solid var(--color-border);
-  transition: all var(--transition-fast);
-}
-
-.btnSecondary:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
 }
 
 .statsRow {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
 }
 
 .statCard {
+  flex: 1;
+  min-width: 140px;
   background: var(--color-bg-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  box-shadow: var(--shadow-sm);
+  gap: var(--space-xs);
+}
+
+.statEmoji {
+  font-size: 22px;
 }
 
 .statValue {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
-  color: var(--color-primary-dark);
+  color: var(--color-primary);
 }
 
 .statLabel {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-muted);
   font-weight: 600;
 }
 
-.section {
+.xpSection {
+  background: var(--color-bg-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.xpHeader {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.xpLabel {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.xpValue {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.projectsSection {
+  margin-bottom: var(--space-xl);
 }
 
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
+  margin-bottom: var(--space-md);
 }
 
 .sectionTitle {
   font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--color-text);
 }
 
-.xpBar {
-  background: var(--color-bg-card);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
+.addBtn {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: var(--shadow-sm);
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-primary);
+  color: white;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  transition: all var(--transition-fast);
 }
 
-.xpLabel {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  font-weight: 600;
+.addBtn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
-.projectGrid {
+.projectsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-md);
 }
 
 .projectCard {
   background: var(--color-bg-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-md);
   cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
 }
 
 .projectCard:hover {
-  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-.projectTop {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.projectCardActive {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .projectEmoji {
   font-size: 28px;
+  margin-bottom: var(--space-xs);
 }
 
 .projectName {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14px;
   color: var(--color-text);
-  flex: 1;
+  margin-bottom: 2px;
 }
 
-.projectDesc {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  line-height: 1.4;
-}
-
-.projectProgress {
-  display: flex;
-  justify-content: space-between;
+.projectCount {
   font-size: 12px;
   color: var(--color-text-muted);
-  font-weight: 600;
 }
 
-.deleteProjectBtn {
+.projectDeleteBtn {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-xs);
   color: var(--color-text-muted);
-  transition: color var(--transition-fast);
+  opacity: 0;
+  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
 }
 
-.deleteProjectBtn:hover {
-  color: var(--color-danger);
+.projectCard:hover .projectDeleteBtn {
+  opacity: 1;
 }
 
-.emptyState {
-  background: var(--color-bg-card);
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 40px;
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: 15px;
+.projectDeleteBtn:hover {
+  background: var(--color-danger);
+  color: white;
 }
 
-.emptyEmoji {
-  font-size: 48px;
-  display: block;
-  margin-bottom: 12px;
+.tasksSection {
+  margin-bottom: var(--space-xl);
 }
 
 .filterRow {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
   flex-wrap: wrap;
 }
 
 .filterBtn {
-  padding: 6px 14px;
+  padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-full);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-muted);
-  background: var(--color-bg-card);
   border: 2px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
   transition: all var(--transition-fast);
 }
 
@@ -251,12 +216,31 @@
 
 .filterBtnActive {
   background: var(--color-primary);
-  color: white;
   border-color: var(--color-primary);
+  color: white;
 }
 
 .taskList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-sm);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-xl);
+  background: var(--color-bg-card);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+}
+
+.emptyEmoji {
+  font-size: 40px;
+  margin-bottom: var(--space-sm);
+}
+
+.emptyText {
+  font-size: 15px;
+  font-weight: 600;
 }

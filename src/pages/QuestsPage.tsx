@@ -5,86 +5,67 @@ import TaskCard from '@/components/tasks/TaskCard';
 import AddTaskModal from '@/components/tasks/AddTaskModal';
 import styles from './QuestsPage.module.css';
 
-type Priority = 'all' | 'low' | 'medium' | 'high';
+type Filter = 'all' | 'active' | 'completed' | 'overdue';
 
 export default function QuestsPage() {
   const { state } = useGame();
   const { tasks, projects } = state;
+  const [filter, setFilter] = useState<Filter>('all');
   const [showAddTask, setShowAddTask] = useState(false);
-  const [filter, setFilter] = useState<Priority>('all');
-  const [showCompleted, setShowCompleted] = useState(false);
 
-  const activeTasks = tasks.filter((t) => !t.completed);
-  const completedTasks = tasks.filter((t) => t.completed);
-
-  const filteredActive = activeTasks.filter((t) =>
-    filter === 'all' ? true : t.priority === filter
-  );
+  const filteredTasks = tasks.filter((t) => {
+    if (filter === 'all') return true;
+    if (filter === 'active') return !t.completed;
+    if (filter === 'completed') return t.completed;
+    if (filter === 'overdue') {
+      if (t.completed || !t.deadline) return false;
+      const extended = new Date(t.deadline);
+      extended.setDate(extended.getDate() + t.extensionDays);
+      return new Date() > extended;
+    }
+    return true;
+  });
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>⚔️ All Quests</h1>
+        <h1 className={styles.title}>⚔️ Quest Log</h1>
+        <p className={styles.subtitle}>All your tasks in one place.</p>
+      </div>
+
+      <div className={styles.controls}>
+        <div className={styles.filterRow}>
+          {(['all', 'active', 'completed', 'overdue'] as Filter[]).map((f) => (
+            <button
+              key={f}
+              className={[styles.filterBtn, filter === f ? styles.filterBtnActive : ''].join(' ')}
+              onClick={() => setFilter(f)}
+            >
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
         <button className={styles.addBtn} onClick={() => setShowAddTask(true)}>
-          <Plus size={18} />
-          New Quest
+          <Plus size={16} /> New Quest
         </button>
       </div>
 
-      <div className={styles.statsBar}>
-        <span className={styles.statPill}>📝 {activeTasks.length} active</span>
-        <span className={styles.statPill}>✅ {completedTasks.length} completed</span>
-        <span className={styles.statPill}>🗺️ {projects.length} projects</span>
-      </div>
-
-      <div className={styles.filterRow}>
-        {(['all', 'low', 'medium', 'high'] as Priority[]).map((p) => (
-          <button
-            key={p}
-            className={[styles.filterBtn, filter === p ? styles.filterBtnActive : ''].join(' ')}
-            onClick={() => setFilter(p)}
-          >
-            {p === 'all' ? 'All' : p === 'low' ? '🌿 Low' : p === 'medium' ? '⚡ Medium' : '🔥 High'}
-          </button>
-        ))}
-      </div>
-
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Active Quests</h2>
-        {filteredActive.length === 0 ? (
+      <div className={styles.taskList}>
+        {filteredTasks.length === 0 ? (
           <div className={styles.emptyState}>
-            <span className={styles.emptyEmoji}>🌟</span>
-            <p>No active quests. You&apos;re all caught up!</p>
+            <div className={styles.emptyEmoji}>🌿</div>
+            <p className={styles.emptyText}>No quests found!</p>
           </div>
         ) : (
-          <div className={styles.taskList}>
-            {filteredActive.map((task) => {
-              const project = projects.find((p) => p.id === task.projectId) ?? null;
-              return <TaskCard key={task.id} task={task} project={project} />;
-            })}
-          </div>
+          filteredTasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              project={projects.find((p) => p.id === task.projectId) ?? null}
+            />
+          ))
         )}
       </div>
-
-      {completedTasks.length > 0 && (
-        <div className={styles.section}>
-          <button
-            className={styles.sectionTitle}
-            style={{ textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}
-            onClick={() => setShowCompleted((v) => !v)}
-          >
-            {showCompleted ? '▼' : '▶'} Completed Quests ({completedTasks.length})
-          </button>
-          {showCompleted && (
-            <div className={styles.taskList}>
-              {completedTasks.map((task) => {
-                const project = projects.find((p) => p.id === task.projectId) ?? null;
-                return <TaskCard key={task.id} task={task} project={project} />;
-              })}
-            </div>
-          )}
-        </div>
-      )}
 
       <AddTaskModal isOpen={showAddTask} onClose={() => setShowAddTask(false)} />
     </div>

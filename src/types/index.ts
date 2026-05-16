@@ -1,8 +1,8 @@
 export type TaskPriority = 'low' | 'medium' | 'high';
 
-export type TaskStatus = 'active' | 'completed' | 'overdue';
+export type TaskStatus = 'active' | 'completed' | 'overdue' | 'warning';
 
-export interface Task {
+export type Task = {
   id: string;
   title: string;
   description: string;
@@ -10,14 +10,14 @@ export interface Task {
   projectId: string | null;
   deadline: string | null;
   extensionDays: number;
+  xpReward: number;
+  coinReward: number;
   completed: boolean;
   completedAt: string | null;
   createdAt: string;
-  xpReward: number;
-  coinReward: number;
-}
+};
 
-export interface Project {
+export type Project = {
   id: string;
   name: string;
   description: string;
@@ -25,53 +25,47 @@ export interface Project {
   emoji: string;
   deadline: string | null;
   extensionDays: number;
+  completedCount: number;
   createdAt: string;
-}
+};
 
-export type ItemCategory = 'hat' | 'outfit' | 'accessory' | 'background' | 'pet';
-
-export interface ShopItem {
+export type ShopItem = {
   id: string;
   name: string;
-  description: string;
-  category: ItemCategory;
-  price: number;
   emoji: string;
-  color: string;
-  owned: boolean;
-  equipped: boolean;
-}
+  description: string;
+  price: number;
+  slot: 'hat' | 'accessory';
+  category: string;
+};
 
-export interface CharacterEquipment {
-  hat: string | null;
-  outfit: string | null;
-  accessory: string | null;
-  background: string | null;
-  pet: string | null;
-}
-
-export interface Character {
+export type Character = {
   name: string;
   level: number;
   xp: number;
   xpToNextLevel: number;
+  xpInLevel: number;
   coins: number;
-  equipment: CharacterEquipment;
-  mood: 'happy' | 'neutral' | 'tired';
-}
+  mood: 'happy' | 'neutral' | 'tired' | 'ecstatic' | 'content';
+  equipment: {
+    hat: string | null;
+    accessory: string | null;
+  };
+  inventory: string[];
+};
 
-export interface GameState {
+export type GameState = {
   character: Character;
   tasks: Task[];
   projects: Project[];
   shopItems: ShopItem[];
-  totalTasksCompleted: number;
   streak: number;
-  lastCompletedDate: string | null;
-}
+  lastActiveDate: string | null;
+  notifications: Notification[];
+};
 
-export interface Notification {
+export type Notification = {
   id: string;
   message: string;
   type: 'xp' | 'coins' | 'levelup' | 'info';
-}
+};

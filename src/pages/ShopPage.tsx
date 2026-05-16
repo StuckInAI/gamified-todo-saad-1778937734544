@@ -8,74 +8,71 @@ export default function ShopPage() {
   function handleBuy(itemId: string) {
     const item = shopItems.find((i) => i.id === itemId);
     if (!item) return;
+    const slot = item.slot as 'hat' | 'accessory';
+    if (character.inventory.includes(item.id)) return;
     if (character.coins < item.price) {
-      addNotification('Not enough coins! Complete quests to earn more.', 'info');
+      addNotification('Not enough coins! 😢', 'info');
       return;
     }
-    dispatch({ type: 'BUY_ITEM', payload: { itemId } });
-    addNotification(`Bought ${item.name}! 🎉`, 'coins');
+    dispatch({ type: 'BUY_ITEM', payload: { item } });
+    addNotification(`Bought ${item.name}! ${item.emoji}`, 'info');
+    void slot;
   }
 
   function handleEquip(itemId: string) {
     const item = shopItems.find((i) => i.id === itemId);
     if (!item) return;
-    const slot = item.slot as 'hat' | 'accessory';
-    const isEquipped = character.equipment[slot] === itemId;
-    dispatch({ type: 'EQUIP_ITEM', payload: { itemId } });
-    addNotification(isEquipped ? `Unequipped ${item.name}` : `Equipped ${item.name}! ✨`, 'info');
+    dispatch({ type: 'EQUIP_ITEM', payload: { item } });
+    const isNowEquipped = character.equipment[item.slot] !== item.id;
+    addNotification(
+      isNowEquipped ? `Equipped ${item.name}! ${item.emoji}` : `Unequipped ${item.name}`,
+      'info'
+    );
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>🛍️ Shop</h1>
-        <div className={styles.coinsBadge}>
-          <span>🪙</span>
-          <span>{character.coins} coins</span>
-        </div>
+        <h1 className={styles.title}>🛍️ Cozy Shop</h1>
+        <p className={styles.subtitle}>Spend your hard-earned coins on cosmetics!</p>
+      </div>
+
+      <div className={styles.balance}>
+        <span>🪙</span>
+        <span>{character.coins} coins</span>
       </div>
 
       <div className={styles.grid}>
         {shopItems.map((item) => {
           const owned = character.inventory.includes(item.id);
           const slot = item.slot as 'hat' | 'accessory';
-          const equipped = character.equipment[slot] === item.id;
-          const canAfford = character.coins >= item.price;
-
+          const isEquipped = character.equipment[slot] === item.id;
           return (
             <div
               key={item.id}
               className={[
-                styles.card,
-                equipped ? styles.cardEquipped : owned ? styles.cardOwned : '',
+                styles.itemCard,
+                owned ? styles.itemCardOwned : '',
+                isEquipped ? styles.itemCardEquipped : '',
               ].join(' ')}
             >
               <span className={styles.itemEmoji}>{item.emoji}</span>
-              <p className={styles.itemName}>{item.name}</p>
-              <p className={styles.itemDesc}>{item.description}</p>
+              <span className={styles.itemName}>{item.name}</span>
+              <span className={styles.itemDesc}>{item.description}</span>
               <span className={styles.itemSlot}>{item.slot}</span>
-              {!owned && (
-                <p className={styles.itemPrice}>🪙 {item.price} coins</p>
-              )}
-              {!owned ? (
+              <span className={styles.itemPrice}>🪙 {item.price}</span>
+              {owned ? (
+                <button className={styles.equipBtn} onClick={() => handleEquip(item.id)}>
+                  {isEquipped ? '✅ Equipped' : 'Equip'}
+                </button>
+              ) : (
                 <button
                   className={styles.buyBtn}
                   onClick={() => handleBuy(item.id)}
-                  disabled={!canAfford}
+                  disabled={character.coins < item.price}
                 >
-                  {canAfford ? `Buy for ${item.price} 🪙` : 'Not enough coins'}
+                  Buy
                 </button>
-              ) : equipped ? (
-                <button className={styles.equipBtn} onClick={() => handleEquip(item.id)}>
-                  Unequip
-                </button>
-              ) : (
-                <button className={styles.equipBtn} onClick={() => handleEquip(item.id)}>
-                  Equip ✨
-                </button>
-              )}
-              {equipped && (
-                <div className={styles.equippedLabel}>✅ Equipped</div>
               )}
             </div>
           );

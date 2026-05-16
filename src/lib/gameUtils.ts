@@ -1,67 +1,60 @@
-import type { Task } from '@/types';
+import type { Task, Character } from '@/types';
 
-export function getXpForLevel(level: number): number {
-  if (level <= 1) return 0;
-  return Math.floor(100 * Math.pow(level - 1, 1.5));
-}
-
-export function calculateLevel(totalXp: number): number {
+export function calculateLevel(xp: number): { level: number; xpInLevel: number; xpForLevel: number } {
   let level = 1;
-  while (getXpForLevel(level + 1) <= totalXp) {
+  let xpRequired = 100;
+  let totalXp = xp;
+
+  while (totalXp >= xpRequired) {
+    totalXp -= xpRequired;
     level++;
-    if (level > 999) break;
+    xpRequired = Math.floor(xpRequired * 1.25);
   }
-  return level;
+
+  return {
+    level,
+    xpInLevel: totalXp,
+    xpForLevel: xpRequired,
+  };
 }
 
-export function getXpProgress(totalXp: number): { level: number; current: number; needed: number; percent: number } {
-  const level = calculateLevel(totalXp);
-  const xpForThisLevel = getXpForLevel(level);
-  const xpForNextLevel = getXpForLevel(level + 1);
-  const current = totalXp - xpForThisLevel;
-  const needed = xpForNextLevel - xpForThisLevel;
-  const percent = Math.min(100, Math.floor((current / needed) * 100));
-  return { level, current, needed, percent };
-}
-
-export function getEffectiveDeadline(deadline: string | null, extensionDays: number): Date | null {
-  if (!deadline) return null;
-  const d = new Date(deadline);
-  d.setDate(d.getDate() + extensionDays);
-  return d;
+export function getMoodEmoji(mood: Character['mood']): string {
+  switch (mood) {
+    case 'happy': return '😊';
+    case 'ecstatic': return '🤩';
+    case 'content': return '😌';
+    case 'neutral': return '😐';
+    case 'tired': return '😴';
+    default: return '😊';
+  }
 }
 
 export function getTaskStatus(task: Task): 'completed' | 'overdue' | 'warning' | 'active' {
   if (task.completed) return 'completed';
-  const effective = getEffectiveDeadline(task.deadline, task.extensionDays);
-  if (!effective) return 'active';
+  if (!task.deadline) return 'active';
+
   const now = new Date();
-  const msLeft = effective.getTime() - now.getTime();
-  const daysLeft = msLeft / (1000 * 60 * 60 * 24);
-  if (daysLeft < 0) return 'overdue';
-  if (daysLeft < 2) return 'warning';
+  const officialDeadline = new Date(task.deadline);
+  const extendedDeadline = new Date(task.deadline);
+  extendedDeadline.setDate(extendedDeadline.getDate() + task.extensionDays);
+
+  if (now > extendedDeadline) return 'overdue';
+
+  const warningMs = 2 * 24 * 60 * 60 * 1000;
+  if (extendedDeadline.getTime() - now.getTime() < warningMs) return 'warning';
+
   return 'active';
 }
 
-export function formatDeadline(deadline: string | null, extensionDays: number): string {
-  if (!deadline) return 'No deadline';
-  const official = new Date(deadline);
-  const effective = getEffectiveDeadline(deadline, extensionDays);
-  if (!effective) return 'No deadline';
-  const officialStr = official.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  if (extensionDays === 0) return officialStr;
-  const effectiveStr = effective.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  return `${officialStr} (+${extensionDays}d → ${effectiveStr})`;
-}
+export function formatDeadline(deadline: string, extensionDays: number): string {
+  const base = new Date(deadline);
+  const extended = new Date(deadline);
+  extended.setDate(extended.getDate() + extensionDays);
 
-export function getPriorityXp(priority: string, baseXp: number): number {
-  if (priority === 'high') return Math.floor(baseXp * 1.5);
-  if (priority === 'medium') return baseXp;
-  return Math.floor(baseXp * 0.7);
-}
+  const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
 
-export function getMoodEmoji(mood: string): string {
-  if (mood === 'happy') return '😊';
-  if (mood === 'tired') return '😴';
-  return '🙂';
+  if (extensionDays > 0) {
+    return `${base.toLocaleDateString('en-US', options)} (+${extensionDays}d)`;
+  }
+  return base.toLocaleDateString('en-US', options);
 }

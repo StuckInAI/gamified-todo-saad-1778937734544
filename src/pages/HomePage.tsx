@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, FolderPlus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useGame } from '@/hooks/useGame';
 import TaskCard from '@/components/tasks/TaskCard';
 import AddTaskModal from '@/components/tasks/AddTaskModal';
@@ -7,178 +7,157 @@ import AddProjectModal from '@/components/tasks/AddProjectModal';
 import ProgressBar from '@/components/ui/ProgressBar';
 import styles from './HomePage.module.css';
 
-type FilterType = 'all' | 'active' | 'completed' | string;
+type Filter = 'all' | 'active' | 'completed';
 
 export default function HomePage() {
   const { state, dispatch } = useGame();
   const { character, tasks, projects } = state;
+  const [filter, setFilter] = useState<Filter>('active');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddProject, setShowAddProject] = useState(false);
-  const [filter, setFilter] = useState<FilterType>('active');
-  const [defaultProjectId, setDefaultProjectId] = useState<string | null>(null);
 
   const filteredTasks = tasks.filter((t) => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return !t.completed;
-    if (filter === 'completed') return t.completed;
-    return t.projectId === filter;
+    const matchProject = selectedProjectId ? t.projectId === selectedProjectId : true;
+    const matchFilter =
+      filter === 'all' ? true : filter === 'active' ? !t.completed : t.completed;
+    return matchProject && matchFilter;
   });
-
-  function handleAddTaskForProject(projectId: string) {
-    setDefaultProjectId(projectId);
-    setShowAddTask(true);
-  }
 
   const activeTasks = tasks.filter((t) => !t.completed).length;
   const completedTasks = tasks.filter((t) => t.completed).length;
 
+  const hours = new Date().getHours();
+  const greeting =
+    hours < 12 ? 'Good morning' : hours < 17 ? 'Good afternoon' : 'Good evening';
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <div>
-          <h1 className={styles.greeting}>Hi, {character.name}! ✨</h1>
-          <p className={styles.subGreeting}>
-            Level {character.level} &middot; {activeTasks} active quests
-          </p>
-        </div>
-        <div className={styles.actions}>
-          <button
-            className={styles.btnPrimary}
-            onClick={() => { setDefaultProjectId(null); setShowAddTask(true); }}
-          >
-            <Plus size={18} />
-            Add Quest
-          </button>
-          <button className={styles.btnSecondary} onClick={() => setShowAddProject(true)}>
-            <FolderPlus size={18} />
-            Add Project
-          </button>
-        </div>
-      </div>
-
-      <div className={styles.xpBar}>
-        <div className={styles.xpLabel}>
-          <span>⭐ Level {character.level} — {character.xp} XP</span>
-          <span>{character.xp} / {character.xpToNextLevel}</span>
-        </div>
-        <ProgressBar value={character.xp} max={character.xpToNextLevel} color="var(--color-primary)" />
+        <h1 className={styles.greeting}>
+          {greeting}, {character.name}! 🌟
+        </h1>
+        <p className={styles.subtitle}>
+          You have {activeTasks} active quest{activeTasks !== 1 ? 's' : ''} to complete.
+        </p>
       </div>
 
       <div className={styles.statsRow}>
         {[
-          { label: 'Active Quests', value: activeTasks, emoji: '📝' },
-          { label: 'Completed', value: completedTasks, emoji: '✅' },
-          { label: 'Day Streak', value: state.streak, emoji: '🔥' },
-          { label: 'Coins', value: character.coins, emoji: '🪙' },
-        ].map((s) => (
-          <div key={s.label} className={styles.statCard}>
-            <span className={styles.statValue}>{s.emoji} {s.value}</span>
-            <span className={styles.statLabel}>{s.label}</span>
+          { emoji: '⚔️', value: activeTasks, label: 'Active Quests' },
+          { emoji: '✅', value: completedTasks, label: 'Completed' },
+          { emoji: '🔥', value: state.streak, label: 'Day Streak' },
+          { emoji: '🪙', value: character.coins, label: 'Coins' },
+        ].map(({ emoji, value, label }) => (
+          <div key={label} className={styles.statCard}>
+            <span className={styles.statEmoji}>{emoji}</span>
+            <span className={styles.statValue}>{value}</span>
+            <span className={styles.statLabel}>{label}</span>
           </div>
         ))}
       </div>
 
-      {projects.length > 0 && (
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>🗺️ Projects</h2>
-          </div>
-          <div className={styles.projectGrid}>
-            {projects.map((project) => {
-              const projectTasks = tasks.filter((t) => t.projectId === project.id);
-              const done = projectTasks.filter((t) => t.completed).length;
-              const total = projectTasks.length;
-              return (
-                <div
-                  key={project.id}
-                  className={styles.projectCard}
-                  style={{ borderColor: project.color }}
-                  onClick={() => setFilter(project.id)}
-                >
-                  <div className={styles.projectTop}>
-                    <span className={styles.projectEmoji}>{project.emoji}</span>
-                    <span className={styles.projectName}>{project.name}</span>
-                    <button
-                      className={styles.deleteProjectBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        dispatch({ type: 'DELETE_PROJECT', payload: { id: project.id } });
-                      }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                  {project.description && (
-                    <p className={styles.projectDesc}>{project.description}</p>
-                  )}
-                  <ProgressBar
-                    value={done}
-                    max={total || 1}
-                    color={project.color}
-                  />
-                  <div className={styles.projectProgress}>
-                    <span>{done}/{total} tasks</span>
-                    <button
-                      style={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: 13 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddTaskForProject(project.id);
-                      }}
-                    >
-                      + Add task
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      <div className={styles.xpSection}>
+        <div className={styles.xpHeader}>
+          <span className={styles.xpLabel}>Level {character.level} — XP Progress</span>
+          <span className={styles.xpValue}>
+            {character.xpInLevel} / {character.xpToNextLevel} XP
+          </span>
         </div>
-      )}
+        <ProgressBar value={character.xpInLevel} max={character.xpToNextLevel} color="var(--color-primary)" />
+      </div>
 
-      <div className={styles.section}>
+      <div className={styles.projectsSection}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>📋 Quests</h2>
-          <div className={styles.filterRow}>
-            {(['all', 'active', 'completed'] as FilterType[]).map((f) => (
+          <h2 className={styles.sectionTitle}>🗺️ Projects</h2>
+          <button className={styles.addBtn} onClick={() => setShowAddProject(true)}>
+            <Plus size={16} /> New Project
+          </button>
+        </div>
+        <div className={styles.projectsGrid}>
+          {projects.map((project) => {
+            const count = tasks.filter((t) => t.projectId === project.id && !t.completed).length;
+            return (
               <button
-                key={f}
-                className={[styles.filterBtn, filter === f ? styles.filterBtnActive : ''].join(' ')}
-                onClick={() => setFilter(f)}
+                key={project.id}
+                className={[
+                  styles.projectCard,
+                  selectedProjectId === project.id ? styles.projectCardActive : '',
+                ].join(' ')}
+                style={{ borderTopColor: project.color }}
+                onClick={() =>
+                  setSelectedProjectId((prev) => (prev === project.id ? null : project.id))
+                }
               >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
+                <div className={styles.projectEmoji}>{project.emoji}</div>
+                <div className={styles.projectName}>{project.name}</div>
+                <div className={styles.projectCount}>{count} active task{count !== 1 ? 's' : ''}</div>
+                <button
+                  className={styles.projectDeleteBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dispatch({ type: 'DELETE_PROJECT', payload: { id: project.id } });
+                    if (selectedProjectId === project.id) setSelectedProjectId(null);
+                  }}
+                >
+                  <Trash2 size={14} />
+                </button>
               </button>
-            ))}
-            {projects.map((p) => (
-              <button
-                key={p.id}
-                className={[styles.filterBtn, filter === p.id ? styles.filterBtnActive : ''].join(' ')}
-                onClick={() => setFilter(p.id)}
-              >
-                {p.emoji} {p.name}
-              </button>
-            ))}
-          </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className={styles.tasksSection}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            {selectedProjectId
+              ? `${projects.find((p) => p.id === selectedProjectId)?.emoji} ${
+                  projects.find((p) => p.id === selectedProjectId)?.name
+                }`
+              : '✨ All Quests'}
+          </h2>
+          <button className={styles.addBtn} onClick={() => setShowAddTask(true)}>
+            <Plus size={16} /> New Quest
+          </button>
         </div>
 
-        {filteredTasks.length === 0 ? (
-          <div className={styles.emptyState}>
-            <span className={styles.emptyEmoji}>🌱</span>
-            <p>No quests here yet. Add one to get started!</p>
-          </div>
-        ) : (
-          <div className={styles.taskList}>
-            {filteredTasks.map((task) => {
-              const project = projects.find((p) => p.id === task.projectId) ?? null;
-              return <TaskCard key={task.id} task={task} project={project} />;
-            })}
-          </div>
-        )}
+        <div className={styles.filterRow}>
+          {(['all', 'active', 'completed'] as Filter[]).map((f) => (
+            <button
+              key={f}
+              className={[styles.filterBtn, filter === f ? styles.filterBtnActive : ''].join(' ')}
+              onClick={() => setFilter(f)}
+            >
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.taskList}>
+          {filteredTasks.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyEmoji}>🌿</div>
+              <p className={styles.emptyText}>
+                {filter === 'completed' ? 'No completed quests yet!' : 'No quests here. Add one!'}
+              </p>
+            </div>
+          ) : (
+            filteredTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                project={projects.find((p) => p.id === task.projectId) ?? null}
+              />
+            ))
+          )}
+        </div>
       </div>
 
       <AddTaskModal
         isOpen={showAddTask}
-        onClose={() => { setShowAddTask(false); setDefaultProjectId(null); }}
-        defaultProjectId={defaultProjectId}
+        onClose={() => setShowAddTask(false)}
+        defaultProjectId={selectedProjectId}
       />
       <AddProjectModal isOpen={showAddProject} onClose={() => setShowAddProject(false)} />
     </div>
