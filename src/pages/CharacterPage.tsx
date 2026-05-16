@@ -2,36 +2,32 @@ import { useState } from 'react';
 import { useGame } from '@/hooks/useGame';
 import type { EquipmentCategory } from '@/types';
 import styles from './CharacterPage.module.css';
-import { getMoodEmoji, getMoodLabel } from '@/lib/gameUtils';
-import ProgressBar from '@/components/ui/ProgressBar';
 
 export default function CharacterPage() {
-  const { state, dispatch, addNotification } = useGame();
+  const { state, dispatch } = useGame();
   const { character } = state;
-  const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(character.name);
+  const [editing, setEditing] = useState(false);
 
-  function handleRename(e: React.FormEvent) {
-    e.preventDefault();
-    if (!nameInput.trim()) return;
-    dispatch({ type: 'RENAME_CHARACTER', payload: { name: nameInput.trim() } });
-    setEditingName(false);
-    addNotification('Name updated!', 'info');
+  function handleRename() {
+    if (nameInput.trim() && nameInput.trim() !== character.name) {
+      dispatch({ type: 'RENAME_CHARACTER', payload: { name: nameInput.trim() } });
+    }
+    setEditing(false);
   }
 
   function handleUnequip(category: EquipmentCategory) {
     dispatch({ type: 'UNEQUIP_ITEM', payload: { category } });
   }
 
-  const ownedItems = state.shopItems.filter((i) => character.ownedItems.includes(i.id));
-  const equippedItems = state.shopItems.filter((i) =>
-    Object.values(character.equipment).includes(i.id)
-  );
+  const ownedItems = state.shopItems.filter((i) => character.purchasedItems.includes(i.id));
+
+  const xpPercent = Math.round((character.xp / character.xpToNextLevel) * 100);
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>👤 My Character</h1>
+        <h1 className={styles.title}>🧝 My Character</h1>
       </div>
 
       <div className={styles.grid}>
@@ -41,92 +37,80 @@ export default function CharacterPage() {
             <div className={styles.avatarBig}>
               <span className={styles.avatarEmoji}>🧝</span>
               {character.equipment.hat && (
-                <span className={styles.hatEmoji}>
+                <span className={styles.hatOverlay}>
                   {state.shopItems.find((i) => i.id === character.equipment.hat)?.emoji}
                 </span>
               )}
               {character.equipment.accessory && (
-                <span className={styles.accessoryEmoji}>
+                <span className={styles.accessoryOverlay}>
                   {state.shopItems.find((i) => i.id === character.equipment.accessory)?.emoji}
                 </span>
               )}
             </div>
-            <div className={styles.moodBadge}>
-              {getMoodEmoji(character.mood)} {getMoodLabel(character.mood)}
-            </div>
           </div>
 
-          <div className={styles.characterInfo}>
-            {editingName ? (
-              <form onSubmit={handleRename} className={styles.renameForm}>
-                <input
-                  className={styles.renameInput}
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  autoFocus
-                />
-                <button type="submit" className={styles.renameSubmit}>✓</button>
-                <button type="button" className={styles.renameCancel} onClick={() => setEditingName(false)}>✕</button>
-              </form>
-            ) : (
-              <div className={styles.nameRow}>
-                <h2 className={styles.characterName}>{character.name}</h2>
-                <button className={styles.editBtn} onClick={() => setEditingName(true)}>✏️</button>
-              </div>
-            )}
-            <p className={styles.levelText}>Level {character.level} Adventurer</p>
-          </div>
-
-          <div className={styles.statsGrid}>
-            <div className={styles.statBox}>
-              <span className={styles.statValue}>{character.level}</span>
-              <span className={styles.statLabel}>Level</span>
+          {editing ? (
+            <div className={styles.nameEdit}>
+              <input
+                className={styles.nameInput}
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+                autoFocus
+              />
+              <button className={styles.saveBtn} onClick={handleRename}>Save</button>
+              <button className={styles.cancelBtn} onClick={() => { setEditing(false); setNameInput(character.name); }}>Cancel</button>
             </div>
-            <div className={styles.statBox}>
+          ) : (
+            <div className={styles.nameRow}>
+              <h2 className={styles.characterName}>{character.name}</h2>
+              <button className={styles.editBtn} onClick={() => setEditing(true)}>✏️</button>
+            </div>
+          )}
+
+          <p className={styles.levelText}>Level {character.level} Adventurer</p>
+
+          <div className={styles.xpBar}>
+            <div className={styles.xpBarFill} style={{ width: `${xpPercent}%` }} />
+          </div>
+          <p className={styles.xpText}>{character.xp} / {character.xpToNextLevel} XP</p>
+
+          <div className={styles.statsRow}>
+            <div className={styles.statItem}>
+              <span className={styles.statEmoji}>🪙</span>
               <span className={styles.statValue}>{character.coins}</span>
-              <span className={styles.statLabel}>🪙 Coins</span>
+              <span className={styles.statLabel}>Coins</span>
             </div>
-            <div className={styles.statBox}>
-              <span className={styles.statValue}>{state.streak}</span>
-              <span className={styles.statLabel}>🔥 Streak</span>
-            </div>
-            <div className={styles.statBox}>
+            <div className={styles.statItem}>
+              <span className={styles.statEmoji}>⚔️</span>
               <span className={styles.statValue}>{state.tasks.filter((t) => t.completed).length}</span>
-              <span className={styles.statLabel}>✅ Done</span>
+              <span className={styles.statLabel}>Quests Done</span>
             </div>
-          </div>
-
-          <div className={styles.xpSection}>
-            <div className={styles.xpLabel}>
-              <span>XP Progress</span>
-              <span>{character.xp} / {character.xpToNextLevel}</span>
+            <div className={styles.statItem}>
+              <span className={styles.statEmoji}>🔥</span>
+              <span className={styles.statValue}>{state.streak}</span>
+              <span className={styles.statLabel}>Streak</span>
             </div>
-            <ProgressBar value={character.xp} max={character.xpToNextLevel} color="var(--color-primary)" />
           </div>
         </div>
 
         {/* Equipment */}
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>🎒 Equipment</h2>
-          {(['hat', 'accessory', 'outfit', 'background'] as EquipmentCategory[]).map((cat) => {
-            const itemId = character.equipment[cat];
-            const item = itemId ? state.shopItems.find((i) => i.id === itemId) : null;
+        <div className={styles.equipmentCard}>
+          <h3 className={styles.sectionTitle}>⚔️ Equipment</h3>
+          {(['hat', 'accessory', 'weapon'] as EquipmentCategory[]).map((cat) => {
+            const equippedId = character.equipment[cat];
+            const equippedItem = equippedId ? state.shopItems.find((i) => i.id === equippedId) : null;
             return (
               <div key={cat} className={styles.equipSlot}>
-                <div className={styles.slotLabel}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</div>
-                {item ? (
+                <span className={styles.equipSlotLabel}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                {equippedItem ? (
                   <div className={styles.equippedItem}>
-                    <span className={styles.itemEmoji}>{item.emoji}</span>
-                    <span className={styles.itemName}>{item.name}</span>
-                    <button
-                      className={styles.unequipBtn}
-                      onClick={() => handleUnequip(cat)}
-                    >
-                      Remove
-                    </button>
+                    <span>{equippedItem.emoji}</span>
+                    <span>{equippedItem.name}</span>
+                    <button className={styles.unequipBtn} onClick={() => handleUnequip(cat)}>Remove</button>
                   </div>
                 ) : (
-                  <div className={styles.emptySlot}>Nothing equipped</div>
+                  <span className={styles.emptySlot}>— empty —</span>
                 )}
               </div>
             );
@@ -134,21 +118,20 @@ export default function CharacterPage() {
         </div>
 
         {/* Owned Items */}
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>🎁 Owned Items ({ownedItems.length})</h2>
+        <div className={styles.inventoryCard}>
+          <h3 className={styles.sectionTitle}>🎒 Inventory</h3>
           {ownedItems.length === 0 ? (
-            <p className={styles.emptyText}>Visit the shop to get some items!</p>
+            <p className={styles.emptyText}>No items yet. Visit the shop!</p>
           ) : (
-            <div className={styles.itemsGrid}>
+            <div className={styles.itemGrid}>
               {ownedItems.map((item) => {
-                const isEquipped = equippedItems.some((e) => e.id === item.id);
+                const isEquipped = Object.values(character.equipment).includes(item.id);
                 return (
-                  <div key={item.id} className={[styles.ownedItem, isEquipped ? styles.equipped : ''].join(' ')}>
-                    <span className={styles.ownedItemEmoji}>{item.emoji}</span>
-                    <span className={styles.ownedItemName}>{item.name}</span>
-                    {isEquipped ? (
-                      <span className={styles.equippedTag}>Equipped</span>
-                    ) : (
+                  <div key={item.id} className={[styles.inventoryItem, isEquipped ? styles.equippedHighlight : ''].join(' ')}>
+                    <span className={styles.itemEmoji}>{item.emoji}</span>
+                    <span className={styles.itemName}>{item.name}</span>
+                    {isEquipped && <span className={styles.equippedBadge}>Equipped</span>}
+                    {!isEquipped && (
                       <button
                         className={styles.equipBtn}
                         onClick={() => dispatch({ type: 'EQUIP_ITEM', payload: { id: item.id } })}
